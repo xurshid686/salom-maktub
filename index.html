@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Message Sender</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0088cc, #34b7f1);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+        }
+        
+        h1 {
+            color: #0088cc;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+            height: 150px;
+            resize: vertical;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #0088cc;
+            box-shadow: 0 0 0 2px rgba(0, 136, 204, 0.2);
+        }
+        
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        button {
+            background-color: #0088cc;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        button:hover:not(:disabled) {
+            background-color: #0077b3;
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+        
+        .success {
+            background-color: #e6f7ee;
+            color: #0a8a44;
+            border: 1px solid #a3e9c0;
+        }
+        
+        .error {
+            background-color: #fde8e8;
+            color: #c53030;
+            border: 1px solid #fbb6b6;
+        }
+        
+        .info {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f0f9ff;
+            border-radius: 8px;
+            border-left: 4px solid #0088cc;
+        }
+        
+        .info h3 {
+            color: #0088cc;
+            margin-bottom: 10px;
+        }
+        
+        .info p {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+        
+        .telegram-icon {
+            width: 24px;
+            height: 24px;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Telegram Message Sender</h1>
+        <p class="description">Send messages directly to your Telegram channel or chat</p>
+        
+        <form id="messageForm">
+            <div class="form-group">
+                <label for="message">Your Message</label>
+                <textarea id="message" placeholder="Type your message here..." required></textarea>
+            </div>
+            
+            <div class="button-container">
+                <button type="submit" id="submitButton">
+                    <svg class="telegram-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.14.141-.259.259-.374.261l.213-3.053 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.136-.954l11.566-4.458c.538-.196 1.006.128.832.941z"/>
+                    </svg>
+                    Send Message
+                </button>
+            </div>
+        </form>
+        
+        <div id="status" class="status"></div>
+        
+        <div class="info">
+            <h3>How to set up:</h3>
+            <p>1. Create a Telegram bot using @BotFather</p>
+            <p>2. Get your chat ID using @userinfobot</p>
+            <p>3. Set environment variables in Vercel:</p>
+            <p>&nbsp;&nbsp;- TELEGRAM_BOT_TOKEN=your_bot_token</p>
+            <p>&nbsp;&nbsp;- TELEGRAM_CHAT_ID=your_chat_id</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('messageForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const message = document.getElementById('message').value.trim();
+            const statusDiv = document.getElementById('status');
+            const submitButton = document.getElementById('submitButton');
+            
+            if (!message) {
+                statusDiv.textContent = 'Please enter a message';
+                statusDiv.className = 'status error';
+                statusDiv.style.display = 'block';
+                return;
+            }
+            
+            // Show loading state
+            const originalText = submitButton.innerHTML;
+            submitButton.innerHTML = 'Sending...';
+            submitButton.disabled = true;
+            
+            try {
+                const response = await fetch('/api/sendMessage', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        message: message,
+                        // You can add timestamp or other metadata here
+                        timestamp: new Date().toISOString()
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusDiv.textContent = '✅ Message sent successfully to Telegram!';
+                    statusDiv.className = 'status success';
+                    statusDiv.style.display = 'block';
+                    
+                    // Clear the form
+                    document.getElementById('message').value = '';
+                    
+                    // Hide status after 5 seconds
+                    setTimeout(() => {
+                        statusDiv.style.display = 'none';
+                    }, 5000);
+                } else {
+                    throw new Error(data.error || 'Failed to send message');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                statusDiv.textContent = '❌ Error: ' + error.message;
+                statusDiv.className = 'status error';
+                statusDiv.style.display = 'block';
+            } finally {
+                // Restore button
+                submitButton.innerHTML = originalText;
+                submitButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
